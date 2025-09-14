@@ -34,4 +34,4 @@ if [[ $OFROGON_REF != "master" ]]; then
 fi
 
 echo -e "\nInstallation starting..."
-source ~/.local/share/ofrogon/install.sh
+source ~/.local/share/ofrogon/run.sh
