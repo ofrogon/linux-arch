@@ -34,13 +34,21 @@ done
 clear
 print_logo
 
-# TODO Ajouter un étape pour demander le nom d'utilisateur, email et nom git
-
 # Exit on any error
 set -e
 
 # Source utility functions
 source utilities/utils.sh
+
+# TODO Ajouter un étape pour demander le nom d'utilisateur, email et nom git
+echo "What is your username (format: john)"
+read USERNAME
+
+echo "What is your Git email address (format: john.doe@email.com)?"
+read GIT_EMAIL
+
+echo "What is your Git name (format: John Doe)?"
+read GIT_USERNAME
 
 # Source the package list
 if [ ! -f "packages.conf" ]; then
@@ -72,6 +80,9 @@ if [[ "$WSL_ONLY" == true ]]; then
   echo "Configuring Locales..."
   . install/locales.sh
 
+  echo "Configuring local account"
+  . install/create-user.sh
+
   # Only install packages that can be used in WSL
   echo "Installing development tools..."
   install_packages "${DEVELOPMENT[@]}"
@@ -86,8 +97,21 @@ if [[ "$WSL_ONLY" == true ]]; then
   echo "Installing terminal tools..."
   install_packages "${TERMINAL_TOOLS[@]}"
 
+  echo "Configuring dotfiles..."
+  . install/dotfiles-setup.sh
+
   echo "Configuring ZSH..."
   . install/zsh.sh
+
+  echo "####################################"
+  echo "# Now you can configure Windows, do this on a Windows terminal"
+  echo "#"
+  echo "# To set your username as defaut for your new WSL distro:"
+  echo "#     wsl --manage archlinux --set-default-user $USERNAME "
+  echo "#"
+  echo "# To set Arch as the default WSL distro"
+  echo "#     wsl --set-default archlinux"
+
 else
   echo "Configuring Locales..."
   . install/locales.sh
@@ -117,18 +141,15 @@ else
   echo "Installing fonts..."
   install_packages "${FONTS[@]}"
 
-  # Install gnome specific things to make it like a tiling WM
+  # Install laptop specific things and cofiguring the system
   echo "Configuring Nvidia..."
   . install/nvidia.sh
   echo "Configuring Plymouth..."
   . install/plymouth.sh
+  echo "Configuring dotfiles..."
+  . install/dotfiles-setup.sh
   echo "Configuring ZSH..."
   . install/zsh.sh
-  echo ""
-
-  # Some programs just run better as flatpaks. Like discord/spotify
-  echo "Installing flatpaks (like discord and spotify)"
-  . install-flatpaks.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
