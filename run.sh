@@ -81,8 +81,8 @@ if [[ "$WSL_ONLY" == true ]]; then
   echo "Installing terminal tools..."
   install_packages "${TERMINAL_TOOLS[@]}"
 else
-  echo "Configuring Languages..."
-  . install/languages.sh
+  echo "Configuring Locales..."
+  . install/locales.sh
 
   # Install all packages
   echo "Installing desktop requirements..."
