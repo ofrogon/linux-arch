@@ -19,7 +19,7 @@ EOF
 WSL_ONLY=false
 while [[ "$#" -gt 0 ]]; do
   case $1 in
-  --dev-only)
+  --wsl-only)
     WSL_ONLY=true
     shift
     ;;
@@ -33,6 +33,8 @@ done
 # Clear screen and show logo
 clear
 print_logo
+
+# TODO Ajouter un étape pour demander le nom d'utilisateur, email et nom git
 
 # Exit on any error
 set -e
@@ -67,6 +69,9 @@ fi
 
 # Install packages by category
 if [[ "$WSL_ONLY" == true ]]; then
+  echo "Configuring Locales..."
+  . install/locales.sh
+
   # Only install packages that can be used in WSL
   echo "Installing development tools..."
   install_packages "${DEVELOPMENT[@]}"
@@ -80,6 +85,9 @@ if [[ "$WSL_ONLY" == true ]]; then
 
   echo "Installing terminal tools..."
   install_packages "${TERMINAL_TOOLS[@]}"
+
+  echo "Configuring ZSH..."
+  . install/zsh.sh
 else
   echo "Configuring Locales..."
   . install/locales.sh
@@ -114,8 +122,8 @@ else
   . install/nvidia.sh
   echo "Configuring Plymouth..."
   . install/plymouth.sh
-  echo "Configuring ..."
-  . install/cursor.sh
+  echo "Configuring ZSH..."
+  . install/zsh.sh
   echo ""
 
   # Some programs just run better as flatpaks. Like discord/spotify
