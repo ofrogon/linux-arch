@@ -139,25 +139,25 @@ else
   install_packages "${DESKTOP_REQUIREMENT[@]}"
 
   echo "Installing development tools..."
-  #install_packages "${DEVELOPMENT[@]}"
+  install_packages "${DEVELOPMENT[@]}"
 
   echo "Installing dotnet tools..."
-  #install_packages "${DOTNET[@]}"
+  install_packages "${DOTNET[@]}"
 
   echo "Installing Hyprland..."
-  #install_packages "${HYPRLAND[@]}"
+  install_packages "${HYPRLAND[@]}"
 
   echo "Installing graphic drivers..."
-  #install_packages "${NVIDIA[@]}"
+  install_packages "${NVIDIA[@]}"
 
   echo "Installing system utilities..."
-  #install_packages "${SYSTEM_UTILS[@]}"
+  install_packages "${SYSTEM_UTILS[@]}"
 
   echo "Installing terminal tools..."
-  #install_packages "${TERMINAL_TOOLS[@]}"
+  install_packages "${TERMINAL_TOOLS[@]}"
 
   echo "Installing fonts..."
-  #install_packages "${FONTS[@]}"
+  install_packages "${FONTS[@]}"
 
   # Install laptop specific things and cofiguring the system
   echo "Configuring Nvidia..."
