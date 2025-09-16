@@ -50,13 +50,26 @@ read GIT_EMAIL
 echo "What is your Git name (format: John Doe)?"
 read GIT_USERNAME
 
-# Source the package list
-if [ ! -f "packages.conf" ]; then
-  echo "Error: packages.conf not found!"
-  exit 1
-fi
+# Source the package lists
+PACKAGES_LIST=(
+  DESKTOP_REQUIREMENT
+  DEVELOPMENT
+  DOTNET
+  FONTS
+  HYPRLAND
+  NVIDIA
+  SYSTEM_UTILS
+  TERMINAL_TOOLS
+)
 
-source packages.conf
+for package in ${PACKAGES_LIST[@]}; do
+  if [ ! -f "packages/${package}.conf" ]; then
+    echo "Error: ${package}.conf not found!"
+    exit 1
+  fi
+
+  source packages/${package}.conf
+done
 
 if [[ "$WSL_ONLY" == true ]]; then
   echo "Starting wsl-only setup..."
@@ -78,30 +91,30 @@ fi
 # Install packages by category
 if [[ "$WSL_ONLY" == true ]]; then
   echo "Configuring Locales..."
-  . install/locales.sh
+  #. install/locales.sh
 
   echo "Configuring local account"
-  . install/create-user.sh
+  #. install/create-user.sh
 
   # Only install packages that can be used in WSL
   echo "Installing development tools..."
-  install_packages "${DEVELOPMENT[@]}"
-  install_packages "${DEVELOPMENT_DESKTOP[@]}"
+  #install_packages "${DEVELOPMENT[@]}"
+  #install_packages "${DEVELOPMENT_DESKTOP[@]}"
 
   echo "Installing dotnet tools..."
-  install_packages "${DOTNET[@]}"
+  #install_packages "${DOTNET[@]}"
 
   echo "Installing system utilities..."
-  install_packages "${SYSTEM_UTILS[@]}"
+  #install_packages "${SYSTEM_UTILS[@]}"
 
   echo "Installing terminal tools..."
-  install_packages "${TERMINAL_TOOLS[@]}"
+  #install_packages "${TERMINAL_TOOLS[@]}"
 
   echo "Configuring dotfiles..."
-  . install/dotfiles-setup.sh
+  #. install/dotfiles-setup.sh
 
   echo "Configuring ZSH..."
-  . install/zsh.sh
+  #. install/zsh.sh
 
   echo "####################################"
   echo "# Now you can configure Windows, do this on a Windows terminal"
@@ -116,40 +129,45 @@ else
   echo "Configuring Locales..."
   . install/locales.sh
 
+  # Some magic to do with RUST
+  if ! command -v rustup &>/dev/null; then
+    rustup default stable
+  fi
+
   # Install all packages
   echo "Installing desktop requirements..."
   install_packages "${DESKTOP_REQUIREMENT[@]}"
 
   echo "Installing development tools..."
-  install_packages "${DEVELOPMENT[@]}"
+  #install_packages "${DEVELOPMENT[@]}"
 
   echo "Installing dotnet tools..."
-  install_packages "${DOTNET[@]}"
+  #install_packages "${DOTNET[@]}"
 
   echo "Installing Hyprland..."
-  install_packages "${HYPRLAND[@]}"
+  #install_packages "${HYPRLAND[@]}"
 
   echo "Installing graphic drivers..."
-  install_packages "${NVIDIA[@]}"
+  #install_packages "${NVIDIA[@]}"
 
   echo "Installing system utilities..."
-  install_packages "${SYSTEM_UTILS[@]}"
+  #install_packages "${SYSTEM_UTILS[@]}"
 
   echo "Installing terminal tools..."
-  install_packages "${TERMINAL_TOOLS[@]}"
+  #install_packages "${TERMINAL_TOOLS[@]}"
 
   echo "Installing fonts..."
-  install_packages "${FONTS[@]}"
+  #install_packages "${FONTS[@]}"
 
   # Install laptop specific things and cofiguring the system
   echo "Configuring Nvidia..."
-  . install/nvidia.sh
+  #. install/nvidia.sh
   echo "Configuring Plymouth..."
-  . install/plymouth.sh
+  #. install/plymouth.sh
   echo "Configuring dotfiles..."
-  . install/dotfiles-setup.sh
+  #. install/dotfiles-setup.sh
   echo "Configuring ZSH..."
-  . install/zsh.sh
+  #. install/zsh.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."

@@ -24,7 +24,7 @@ echo -e "\nCloning Arch-Linux-Config from: https://github.com/${OFROGON_REPO}.gi
 rm -rf ~/.local/share/ofrogon/
 git clone "https://github.com/${OFROGON_REPO}.git" ~/.local/share/ofrogon >/dev/null
 
-# Use custom branch if instructed, otherwise default to master
+# Use custom branch if instructed, otherwise default to main
 OFROGON_REF="${OFROGON_REF:-main}"
 if [[ $OFROGON_REF != "master" ]]; then
   echo -e "\eUsing branch: $OFROGON_REF"

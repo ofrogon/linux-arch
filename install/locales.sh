@@ -7,7 +7,7 @@ LOCALES=("en_GB.UTF-8 UTF-8  " "en_US.UTF-8 UTF-8  ")
 for loc in "${LOCALES[@]}"; do
   # If the line exist, we uncomment it
   if grep -Eq "^[#[:space:]]*$(printf '%s' "$loc" | sed 's/[.[\*^$(){}+?|\\/]/\\&/g')$" "$GEN"; then
-    sed -i -E "s|^[#[:space:]]*($(printf '%s' "$loc" | sed 's/[.[\*^$(){}+?|\\/]/\\&/g'))$|\1|" "$GEN"
+    sudo sed -i -E "s|^[#[:space:]]*($(printf '%s' "$loc" | sed 's/[.[\*^$(){}+?|\\/]/\\&/g'))$|\1|" "$GEN"
   else
     # Else we add it
     echo "$loc" >>"$GEN"
@@ -15,7 +15,7 @@ for loc in "${LOCALES[@]}"; do
 done
 
 # Render the locales
-locale-gen
+sudo locale-gen
 
 echo "Locales activated: ${LOCALES[*]}"
 echo "Validating..."
