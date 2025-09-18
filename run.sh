@@ -166,7 +166,7 @@ else
   echo "Configuring Plymouth..."
   #. install/plymouth.sh
   echo "Configuring dotfiles..."
-  #. install/dotfiles-setup.sh
+  . install/dotfiles-setup.sh
   echo "Configuring ZSH..."
   #. install/zsh.sh
 fi

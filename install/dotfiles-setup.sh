@@ -15,15 +15,15 @@ fi
 cd ~
 
 # Check if the repository already exists
-if [ -d "~/$REPO_NAME" ]; then
+if [ -d "$REPO_NAME" ]; then
   echo "Repository '$REPO_NAME' already exists. Skipping clone"
 else
-  git clone "$REPO_URL" ~/$REPO_NAME
+  git clone "$REPO_URL"
 fi
 
 # Check if the clone was successful
 if [ $? -eq 0 ]; then
-  cd "~/dotfiles/$REPO_NAME"
+  cd "$REPO_NAME"
   stow . --adopt
   git reset --hard
   cd "$ORIGINAL_DIR"
