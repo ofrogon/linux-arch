@@ -162,6 +162,7 @@ else
   # Install laptop specific things and cofiguring the system
   echo "Configuring Nvidia..."
   #. install/nvidia.sh
+  . install/setup-cards-symlink.sh
   echo "Configuring Plymouth..."
   #. install/plymouth.sh
   echo "Configuring dotfiles..."
