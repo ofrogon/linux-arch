@@ -1,19 +1,6 @@
 #!/bin/bash
 
-# Print the logo
-print_logo() {
-  cat <<"EOF"
-▀████    ▐████▀  ▄██████▄  ▀█████████▄     ▄████████ ███    █▄  ▀████    ▐████▀ 
-  ███▌   ████▀  ███    ███   ███    ███   ███    ███ ███    ███   ███▌   ████▀  
-   ███  ▐███    ███    ███   ███    ███   ███    ███ ███    ███    ███  ▐███    
-   ▀███▄███▀    ███    ███  ▄███▄▄▄██▀   ▄███▄▄▄▄██▀ ███    ███    ▀███▄███▀    
-   ████▀██▄     ███    ███ ▀▀███▀▀▀██▄  ▀▀███▀▀▀▀▀   ███    ███    ████▀██▄     
-  ▐███  ▀███    ███    ███   ███    ██▄ ▀███████████ ███    ███   ▐███  ▀███    
- ▄███     ███▄  ███    ███   ███    ███   ███    ███ ███    ███  ▄███     ███▄  
-████       ███▄  ▀██████▀  ▄█████████▀    ███    ███ ████████▀  ████       ███▄ 
-                                          ███    ███                            
-EOF
-}
+source ./utilities/logo.sh
 
 # Parse command line arguments
 WSL_ONLY=false
@@ -169,6 +156,8 @@ else
   . install/dotfiles-setup.sh
   echo "Configuring ZSH..."
   #. install/zsh.sh
+  echo "Configure theme"
+  . install/theme.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."

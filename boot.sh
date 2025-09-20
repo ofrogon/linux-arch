@@ -1,23 +1,11 @@
 #!/bin/bash
 
-# Generated from https://patorjk.com/software/taag/, option "Delta Corps Priest 1"
-ansi_art='                                                                       
-▀████    ▐████▀  ▄██████▄  ▀█████████▄     ▄████████ ███    █▄  ▀████    ▐████▀ 
-  ███▌   ████▀  ███    ███   ███    ███   ███    ███ ███    ███   ███▌   ████▀  
-   ███  ▐███    ███    ███   ███    ███   ███    ███ ███    ███    ███  ▐███    
-   ▀███▄███▀    ███    ███  ▄███▄▄▄██▀   ▄███▄▄▄▄██▀ ███    ███    ▀███▄███▀    
-   ████▀██▄     ███    ███ ▀▀███▀▀▀██▄  ▀▀███▀▀▀▀▀   ███    ███    ████▀██▄     
-  ▐███  ▀███    ███    ███   ███    ██▄ ▀███████████ ███    ███   ▐███  ▀███    
- ▄███     ███▄  ███    ███   ███    ███   ███    ███ ███    ███  ▄███     ███▄  
-████       ███▄  ▀██████▀  ▄█████████▀    ███    ███ ████████▀  ████       ███▄ 
-                                          ███    ███                            '
-
-clear
-echo -e "\n$ansi_art\n"
+source ./utilities/logo.sh
+print_logo
 
 sudo pacman -Syu --noconfirm --needed git
 
-# Use custom repo if specified, otherwise default to basecamp/omarchy
+# Use custom repo if specified, otherwise default to ofrogon/linux-arch
 OFROGON_REPO="${OFROGON_REPO:-ofrogon/linux-arch}"
 
 echo -e "\nCloning Arch-Linux-Config from: https://github.com/${OFROGON_REPO}.git"

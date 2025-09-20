@@ -1,8 +1,11 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -euo pipefail
 
 # --- helpers ---
-die() { echo "Error: $*" >&2; exit 1; }
+die() {
+  echo "Error: $*" >&2
+  exit 1
+}
 
 slugify() {
   # lower-case, replace non alnum with '-', trim '-' ends
@@ -14,9 +17,15 @@ have() { command -v "$1" >/dev/null 2>&1; }
 detect_browser() {
   # Prefer Chromium-based for --app=
   for c in chromium chromium-browser google-chrome-stable google-chrome chrome brave-browser brave microsoft-edge-stable microsoft-edge edge vivaldi; do
-    if have "$c"; then echo "$c"; return 0; fi
+    if have "$c"; then
+      echo "$c"
+      return 0
+    fi
   done
-  if have firefox; then echo "firefox"; return 0; fi
+  if have firefox; then
+    echo "firefox"
+    return 0
+  fi
   return 1
 }
 
@@ -46,14 +55,14 @@ download_icon() {
 build_exec() {
   local browser="$1" url="$2" wmclass="$3"
   case "$browser" in
-    *firefox*)
-      # Firefox doesn't support --app; use kiosk as closest approximation.
-      echo "$browser --kiosk \"$url\""
-      ;;
-    *)
-      # Chromium/Chrome/Brave/Edge/Vivaldi
-      echo "$browser --app=\"$url\" --class=\"$wmclass\""
-      ;;
+  *firefox*)
+    # Firefox doesn't support --app; use kiosk as closest approximation.
+    echo "$browser --kiosk \"$url\""
+    ;;
+  *)
+    # Chromium/Chrome/Brave/Edge/Vivaldi
+    echo "$browser --app=\"$url\" --class=\"$wmclass\""
+    ;;
   esac
 }
 
@@ -104,7 +113,7 @@ WMCLASS="$(echo "$SLUG" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
 EXEC_LINE="$(build_exec "$BROWSER_CMD" "$APP_URL" "$WMCLASS")"
 
 # desktop entry
-cat > "$DESKTOP_PATH" <<EOF
+cat >"$DESKTOP_PATH" <<EOF
 [Desktop Entry]
 Version=1.0
 Type=Application
