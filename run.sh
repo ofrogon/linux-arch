@@ -158,6 +158,8 @@ else
   #. install/zsh.sh
   echo "Configure theme"
   . install/theme.sh
+  echo "Hide some applications"
+  . install/setup-hidden-applications.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
