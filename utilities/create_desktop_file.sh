@@ -7,6 +7,27 @@ die() {
   exit 1
 }
 
+usage() {
+  cat >&2 <<'USAGE'
+Create a PWA .desktop launcher (CLI or interactive).
+
+Options:
+  -n, --name NAME            Nom de l'application (ex: "Notion")
+  -u, --url URL              URL à lancer (doit commencer par http:// ou https://)
+  -i, --icon PATH_OR_URL     Icône (fichier local ou URL)
+  -b, --browser CMD          Binaire du navigateur (ex: google-chrome, brave, firefox)
+      --wmclass WMCLASS      Valeur StartupWMClass (sinon générée depuis le nom)
+      --categories CATS      Catégories .desktop (ex: "Internet;Productivity;")
+      --no-prompt            Ne pose aucune question (échoue si requis manquant)
+  -h, --help                 Afficher cette aide
+
+Exemples:
+  pwa-desktop.sh -n "Notion" -u https://www.notion.so/ -i ~/pics/notion.png
+  pwa-desktop.sh --name Slack --url https://app.slack.com --icon https://.../slack.png --browser brave
+
+USAGE
+}
+
 slugify() {
   # lower-case, replace non alnum with '-', trim '-' ends
   echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
@@ -16,6 +37,7 @@ have() { command -v "$1" >/dev/null 2>&1; }
 
 detect_browser() {
   # Prefer Chromium-based for --app=
+  local c
   for c in chromium chromium-browser google-chrome-stable google-chrome chrome brave-browser brave microsoft-edge-stable microsoft-edge edge vivaldi; do
     if have "$c"; then
       echo "$c"
@@ -56,12 +78,12 @@ build_exec() {
   local browser="$1" url="$2" wmclass="$3"
   case "$browser" in
   *firefox*)
-    # Firefox doesn't support --app; use kiosk as closest approximation.
-    echo "$browser --kiosk \"$url\""
+    # Firefox n'a pas --app ; --kiosk est l'approche la plus proche.
+    printf '%s --kiosk "%s"' "$browser" "$url"
     ;;
   *)
     # Chromium/Chrome/Brave/Edge/Vivaldi
-    echo "$browser --app=\"$url\" --class=\"$wmclass\""
+    printf '%s --app="%s" --class="%s"' "$browser" "$url" "$wmclass"
     ;;
   esac
 }
@@ -72,26 +94,98 @@ update_desktop_db_if_possible() {
   fi
 }
 
-# --- prompts ---
-read -rp "PWA Name (e.g., Notion): " APP_NAME
-[[ -n "${APP_NAME:-}" ]] || die "Name is required."
+prompt_if_needed() {
+  local varname="$1" prompt="$2" validator="${3:-}"
+  if [[ "${NO_PROMPT:-0}" -eq 1 ]]; then
+    # no prompt mode: do nothing here
+    return 0
+  fi
+  local cur="${!varname:-}"
+  if [[ -z "$cur" ]]; then
+    read -rp "$prompt" cur
+    printf -v "$varname" '%s' "$cur"
+  fi
+  if [[ -n "$validator" ]]; then
+    eval "$validator" || die "Invalid value for ${varname}"
+  fi
+}
 
-read -rp "PWA URL to launch (e.g., https://www.notion.so/): " APP_URL
-[[ -n "${APP_URL:-}" ]] || die "URL is required."
-if ! [[ "$APP_URL" =~ ^https?:// ]]; then
-  die "URL must start with http:// or https://"
+# --- defaults ---
+APP_NAME="${APP_NAME:-}"
+APP_URL="${APP_URL:-}"
+ICON_SRC="${ICON_SRC:-}"
+BROWSER_CMD="${BROWSER_CMD:-}"
+WMCLASS="${WMCLASS:-}"
+CATEGORIES="${CATEGORIES:-Utility;}"
+NO_PROMPT=0
+
+# --- parse args ---
+if [[ $# -eq 0 ]]; then
+  # interactive fallback later
+  :
+else
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+    -n | --name)
+      APP_NAME="${2-}"
+      shift 2
+      ;;
+    -u | --url)
+      APP_URL="${2-}"
+      shift 2
+      ;;
+    -i | --icon)
+      ICON_SRC="${2-}"
+      shift 2
+      ;;
+    -b | --browser)
+      BROWSER_CMD="${2-}"
+      shift 2
+      ;;
+    --wmclass)
+      WMCLASS="${2-}"
+      shift 2
+      ;;
+    --categories)
+      CATEGORIES="${2-}"
+      shift 2
+      ;;
+    --no-prompt)
+      NO_PROMPT=1
+      shift
+      ;;
+    -h | --help)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      break
+      ;;
+    *)
+      usage
+      die "Unknown option: $1"
+      ;;
+    esac
+  done
 fi
 
-read -rp "Icon URL or local path (PNG recommended): " ICON_SRC
-[[ -n "${ICON_SRC:-}" ]] || die "Icon URL/path is required."
+# --- interactive fallback (unless --no-prompt) ---
+prompt_if_needed APP_NAME "PWA Name (e.g., Notion): " '[ -n "$APP_NAME" ]'
+prompt_if_needed APP_URL "PWA URL to launch (e.g., https://www.notion.so/): " '[[ "$APP_URL" =~ ^https?:// ]]'
+prompt_if_needed ICON_SRC "Icon URL or local path (PNG recommended): " '[ -n "$ICON_SRC" ]'
 
-BROWSER_CMD="$(detect_browser || true)"
 if [[ -z "${BROWSER_CMD:-}" ]]; then
-  echo "No supported browser detected."
-  read -rp "Enter a browser command to use (must accept --app or --kiosk), or press Enter to abort: " BROWSER_CMD
-  [[ -n "${BROWSER_CMD:-}" ]] || die "No browser available."
+  if BROWSER_CMD="$(detect_browser || true)"; then :; else
+    if [[ "${NO_PROMPT:-0}" -eq 1 ]]; then
+      die "No supported browser detected and --no-prompt is set."
+    fi
+    read -rp "Enter a browser command to use (must accept --app or --kiosk), or press Enter to abort: " BROWSER_CMD
+    [[ -n "${BROWSER_CMD:-}" ]] || die "No browser available."
+  fi
 fi
 
+# --- build paths & files ---
 ensure_dirs
 
 SLUG="$(slugify "$APP_NAME")"
@@ -99,20 +193,27 @@ DESKTOP_PATH="$HOME/.local/share/applications/${SLUG}.desktop"
 
 # Decide icon file extension from source; default to .png
 ext="png"
-if [[ "$ICON_SRC" =~ \.svg($|\?) ]]; then ext="svg"; fi
-if [[ "$ICON_SRC" =~ \.ico($|\?) ]]; then ext="ico"; fi
-if [[ "$ICON_SRC" =~ \.jpg($|\?) || "$ICON_SRC" =~ \.jpeg($|\?) ]]; then ext="jpg"; fi
-ICON_PATH="$HOME/.local/share/icons/applications/${SLUG}.${ext}"
+if [[ "$ICON_SRC" =~ \.svg($|\?) ]]; then
+  ext="svg"
+elif [[ "$ICON_SRC" =~ \.ico($|\? ) ]]; then
+  ext="ico"
+elif [[ "$ICON_SRC" =~ \.jpe?g($|\?) ]]; then
+  ext="jpg"
+fi
+
+ICON_PATH="$HOME/.local/share/applications/icons/${SLUG}.${ext}"
 
 echo "Fetching icon..."
 download_icon "$ICON_SRC" "$ICON_PATH"
 
-# Try to generate a WMCLASS that's stable
-WMCLASS="$(echo "$SLUG" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
+# StartupWMClass
+if [[ -z "${WMCLASS:-}" ]]; then
+  WMCLASS="$(echo "$SLUG" | tr '[:lower:]' '[:upper:]' | tr '-' '_')"
+fi
 
 EXEC_LINE="$(build_exec "$BROWSER_CMD" "$APP_URL" "$WMCLASS")"
 
-# desktop entry
+# --- write .desktop ---
 cat >"$DESKTOP_PATH" <<EOF
 [Desktop Entry]
 Version=1.0
@@ -122,7 +223,7 @@ Comment=Launch $APP_NAME as a PWA
 Exec=$EXEC_LINE
 Icon=$ICON_PATH
 Terminal=false
-Categories=Utility;
+Categories=$CATEGORIES
 StartupWMClass=$WMCLASS
 EOF
 
