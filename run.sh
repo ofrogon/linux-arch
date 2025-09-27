@@ -165,6 +165,8 @@ else
   . install/setup-hidden-applications.sh
   echo "Create the WPAs"
   . install/setup-wpa.sh
+  echo "Setup Network services"
+  . install/setup-networks.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
