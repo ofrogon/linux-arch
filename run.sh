@@ -121,6 +121,9 @@ else
     rustup default stable
   fi
 
+  echo "Configure Pacman"
+  . install/setup-pacman.sh
+
   # Install all packages
   echo "Installing desktop requirements..."
   install_packages "${DESKTOP_REQUIREMENT[@]}"
