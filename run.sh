@@ -167,6 +167,9 @@ else
   . install/setup-wpa.sh
   echo "Setup Network services"
   . install/setup-networks.sh
+  echo "Setup Plymouth (boot screen theme)"
+  . install/install-plymouth-catppuccin-macchiato.sh
+  . install/setup-plymouth.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
