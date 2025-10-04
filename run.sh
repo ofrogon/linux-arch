@@ -37,6 +37,10 @@ read GIT_EMAIL
 echo "What is your Git name (format: John Doe)?"
 read GIT_USERNAME
 
+echo "Do you have en Nvidia system? (y/N)"
+read SET_NVIDIA
+SET_NVIDIA=${SET_NVIDIA:-N}
+
 # Source the package lists
 PACKAGES_LIST=(
   DESKTOP_REQUIREMENT
@@ -137,8 +141,14 @@ else
   echo "Installing Hyprland..."
   install_packages "${HYPRLAND[@]}"
 
-  echo "Installing graphic drivers..."
-  install_packages "${NVIDIA[@]}"
+  if [[ "$SET_NVIDIA" == "Y" || "$SET_NVIDIA" == "y" ]]; then
+    echo "Installing graphic drivers..."
+    install_packages "${NVIDIA[@]}"
+
+    echo "Configuring Nvidia..."
+    #. install/nvidia.sh
+    . install/setup-cards-symlink.sh
+  fi
 
   echo "Installing system utilities..."
   install_packages "${SYSTEM_UTILS[@]}"
@@ -149,10 +159,6 @@ else
   echo "Installing fonts..."
   install_packages "${FONTS[@]}"
 
-  # Install laptop specific things and cofiguring the system
-  echo "Configuring Nvidia..."
-  #. install/nvidia.sh
-  . install/setup-cards-symlink.sh
   echo "Configuring Plymouth..."
   #. install/plymouth.sh
   echo "Configuring dotfiles..."
