@@ -107,7 +107,7 @@ if [[ "$WSL_ONLY" == true ]]; then
   #install_packages "${TERMINAL_TOOLS[@]}"
 
   echo "Configuring dotfiles..."
-  #. install/dotfiles-setup.sh
+  . install/setup-dotfiles.sh
 
   echo "Configuring ZSH..."
   #. install/zsh.sh
@@ -172,7 +172,7 @@ else
   echo "Configuring Plymouth..."
   #. install/plymouth.sh
   echo "Configuring dotfiles..."
-  . install/dotfiles-setup.sh
+  . install/setup-dotfiles.sh
   echo "Configuring ZSH..."
   #. install/zsh.sh
   echo "Configure Git"
@@ -188,6 +188,8 @@ else
   echo "Setup Plymouth (boot screen theme)"
   . install/install-plymouth-catppuccin-macchiato.sh
   . install/setup-plymouth.sh
+  echo "Setup default applications"
+  . install/setup-default-app.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
