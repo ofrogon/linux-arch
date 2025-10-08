@@ -24,3 +24,7 @@ fi
 git config --global user.name "$GIT_USERNAME"
 git config --global user.email "$GIT_EMAIL"
 git config --global core.editor "nvim"
+git config --global init.defaultBranch "email"
+
+# Set Git LFS
+git lfs install

@@ -41,6 +41,10 @@ echo "Do you have en Nvidia system? (y/N)"
 read SET_NVIDIA
 SET_NVIDIA=${SET_NVIDIA:-N}
 
+echo "Do you want to configure Steam (NVidia only for now)? (y/N)"
+read SET_STEAM
+SET_STEAM=${SET_STEAM:-N}
+
 # Source the package lists
 PACKAGES_LIST=(
   DESKTOP_REQUIREMENT
@@ -49,6 +53,7 @@ PACKAGES_LIST=(
   FONTS
   HYPRLAND
   NVIDIA
+  STEAM
   SYSTEM_UTILS
   TERMINAL_TOOLS
 )
@@ -150,6 +155,11 @@ else
     . install/setup-cards-symlink.sh
   fi
 
+  if [[ "$SET_STEAM" == "Y" || "$SET_STEAM" == "y" ]]; then
+    echo "Installing graphic drivers..."
+    install_packages "${STEAM[@]}"
+  fi
+
   echo "Installing system utilities..."
   install_packages "${SYSTEM_UTILS[@]}"
 
@@ -165,6 +175,8 @@ else
   . install/dotfiles-setup.sh
   echo "Configuring ZSH..."
   #. install/zsh.sh
+  echo "Configure Git"
+  . install/setup-git.sh
   echo "Configure theme"
   . install/theme.sh
   echo "Hide some applications"
