@@ -190,6 +190,8 @@ else
   . install/setup-plymouth.sh
   echo "Setup default applications"
   . install/setup-default-app.sh
+  echo "Setup Firefox"
+  . install/setup-firefox.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
