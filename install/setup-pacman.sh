@@ -38,10 +38,13 @@ enable_candy_and_bar() {
 }
 
 main() {
-  require_root
+  # require_root
   enable_multilib
   enable_color
   enable_candy_and_bar
+
+  # Refresh cache with multilib as a source
+  yay -Syu --noconfirm
 
   echo "Tip: run 'sudo pacman -Syy' to refresh your package databases."
 }
