@@ -1,32 +1,9 @@
 #!/bin/bash
+
+# Source utility functions
+source ../utilities/utils.sh
+
 set -euo pipefail
-
-ts() { date +"%Y%m%d-%H%M%S"; }
-
-need_root() {
-  if [[ $EUID -ne 0 ]]; then
-    echo "Run this as root. Aborting." >&2
-    exit 1
-  fi
-}
-
-have_cmd() { command -v "$1" &>/dev/null; }
-
-backup() {
-  local f="$1"
-  [[ -f "$f" ]] || return 0
-  cp -a "$f" "${f}.bak.$(ts)"
-}
-
-ensure_pkg() {
-  local pkg="$1"
-  if ! pacman -Qi "$pkg" &>/dev/null; then
-    echo "Installing $pkg..."
-    pacman --noconfirm -Syu "$pkg"
-  else
-    echo "$pkg already installed."
-  fi
-}
 
 # Rebuild HOOKS to ensure:
 # - 'plymouth' exists
@@ -35,18 +12,18 @@ ensure_pkg() {
 fix_mkinitcpio_hooks() {
   local file="/etc/mkinitcpio.conf"
   [[ -f "$file" ]] || {
-    echo "$file not found"
+    err "$file not found"
     exit 1
   }
 
-  backup "$file"
+  backup_file "$file"
 
   # extract hooks payload between parentheses
   local payload
   payload=$(sed -n 's/^[[:space:]]*HOOKS=(\(.*\))[[:space:]]*$/\1/p' "$file" | tail -n1)
 
   if [[ -z "$payload" ]]; then
-    echo "Could not parse HOOKS=() from $file"
+    err "Could not parse HOOKS=() from $file"
     exit 1
   fi
 
@@ -95,7 +72,7 @@ fix_mkinitcpio_hooks() {
   fi
 
   local new_line="HOOKS=(${result[*]})"
-  echo "Updating HOOKS -> $new_line"
+  info "Updating HOOKS -> $new_line"
   # Replace only the HOOKS line (the last matching line wins)
   # Use a temp file to avoid sed -i portability quirks
   local tmp
@@ -115,7 +92,7 @@ fix_mkinitcpio_hooks() {
 ensure_kernel_arg_splash_grub() {
   local f="/etc/default/grub"
   [[ -f "$f" ]] || return 1
-  backup "$f"
+  backup_file "$f"
 
   # read current line or set default
   local line
@@ -131,13 +108,13 @@ ensure_kernel_arg_splash_grub() {
     fi
   fi
 
-  echo "Regenerating GRUB config..."
+  info "Regenerating GRUB config..."
   if have_cmd grub-mkconfig; then
     grub-mkconfig -o /boot/grub/grub.cfg
   elif have_cmd grub2-mkconfig; then
     grub2-mkconfig -o /boot/grub2/grub.cfg
   else
-    echo "grub-mkconfig not found. You must regenerate GRUB config manually." >&2
+    warn "grub-mkconfig not found. You must regenerate GRUB config manually." >&2
   fi
   return 0
 }
@@ -146,13 +123,13 @@ ensure_kernel_arg_splash_systemdboot() {
   shopt -s nullglob
   local changed=0
   for entry in /boot/loader/entries/*.conf; do
-    backup "$entry"
+    backup_file "$entry"
     if grep -E '^options ' "$entry" | grep -qw splash; then
       continue
     fi
     # Append splash to the options line
     sed -i 's/^\(options .*\)$/\1 splash/' "$entry"
-    echo "Updated: $entry"
+    info "Updated: $entry"
     changed=1
   done
   if [[ $changed -eq 0 ]]; then
@@ -162,34 +139,34 @@ ensure_kernel_arg_splash_systemdboot() {
 }
 
 ensure_kernel_arg_splash() {
-  echo "Ensuring kernel cmdline has 'splash'..."
+  info "Ensuring kernel cmdline has 'splash'..."
   if ensure_kernel_arg_splash_grub; then
-    echo "GRUB: 'splash' ensured."
+    info "GRUB: 'splash' ensured."
     return
   fi
   if ensure_kernel_arg_splash_systemdboot; then
-    echo "systemd-boot: 'splash' ensured."
+    info "systemd-boot: 'splash' ensured."
     return
   fi
-  echo "Could not detect GRUB or systemd-boot entries. Add 'splash' to your kernel cmdline manually." >&2
+  warn "Could not detect GRUB or systemd-boot entries. Add 'splash' to your kernel cmdline manually." >&2
 }
 
 rebuild_initramfs() {
-  echo "Regenerating initramfs with mkinitcpio -P ..."
+  info "Regenerating initramfs with mkinitcpio -P ..."
   mkinitcpio -P
 }
 
 main() {
-  need_root
-  ensure_pkg plymouth
+  require_root
+  install_package plymouth
   fix_mkinitcpio_hooks
   set_theme_if_requested
   rebuild_initramfs
   ensure_kernel_arg_splash
 
   echo
-  echo "All set. Reboot to test Plymouth."
-  echo "Tip: For a quieter boot, add 'quiet loglevel=3' to your kernel cmdline too."
+  ok "All set. Reboot to test Plymouth."
+  info "Tip: For a quieter boot, add 'quiet loglevel=3' to your kernel cmdline too."
 }
 
 main "$@"

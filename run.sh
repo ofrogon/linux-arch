@@ -53,6 +53,7 @@ PACKAGES_LIST=(
   FONTS
   HYPRLAND
   NVIDIA
+  RAZER_BLADE
   STEAM
   SYSTEM_UTILS
   TERMINAL_TOOLS
@@ -159,6 +160,9 @@ else
     echo "Installing graphic drivers..."
     install_packages "${STEAM[@]}"
   fi
+
+  # Set this a an option
+  install_packages "${RAZER_BLADE[@]}"
 
   echo "Installing system utilities..."
   install_packages "${SYSTEM_UTILS[@]}"

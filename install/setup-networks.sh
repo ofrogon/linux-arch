@@ -1,3 +1,10 @@
+# Source utility functions
+source ../utilities/utils.sh
+
+set -euo pipefail
+
+require_root
+
 # Ensure iwd service will be started
 sudo systemctl enable iwd.service
 

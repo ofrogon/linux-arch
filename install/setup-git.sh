@@ -1,12 +1,14 @@
 #!/bin/bash
 
-is_git_installed() {
-  pacman -Qi "git" &>/dev/null
-}
+# Source utility functions
+source ../utilities/utils.sh
 
-if ! is_git_installed; then
-  echo "Install git first"
-fi
+set -euo pipefail
+
+require_root
+
+install_package git
+install_package git-lfs
 
 # Validate that GIT_EMAIL variable is set
 if [ ! -z ${GIT_EMAIL+x} ]; then
@@ -24,6 +26,7 @@ fi
 git config --global user.name "$GIT_USERNAME"
 git config --global user.email "$GIT_EMAIL"
 git config --global core.editor "nvim"
+# TODO Validate if the value "email" fits here...
 git config --global init.defaultBranch "email"
 
 # Set Git LFS

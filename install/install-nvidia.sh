@@ -1,32 +1,19 @@
 #!/bin/bash
+
+# Source utility functions
+source ../utilities/utils.sh
+
 set -euo pipefail
 
 REQUIRED_MODULES=(i915 nvidia nvidia_modeset nvidia_uvm nvidia_drm)
 MKINITCONF="/etc/mkinitcpio.conf"
 MODPROBE_NVIDIA_CONF="/etc/modprobe.d/nvidia.conf"
 
-require_root() {
-  if [[ $EUID -ne 0 ]]; then
-    echo "Please run as root (sudo)." >&2
-    exit 1
-  fi
-}
-
 have_nvidia_gpu() {
   if lspci -nnk | grep -qi 'VGA.*NVIDIA'; then
     return 0
   else
     return 1
-  fi
-}
-
-backup_file() {
-  local f="$1"
-  if [[ -f "$f" ]]; then
-    local ts
-    ts="$(date +%Y%m%d-%H%M%S)"
-    cp -a "$f" "$f.bak-${ts}"
-    echo "Backed up $f to $f.bak-${ts}"
   fi
 }
 
@@ -79,7 +66,7 @@ dedupe_and_merge_modules() {
 }
 
 ensure_modules_in_mkinitcpio() {
-  echo "Ensuring MODULES in $MKINITCONF includes NVIDIA + i915…"
+  info "Ensuring MODULES in $MKINITCONF includes NVIDIA + i915…"
   backup_file "$MKINITCONF"
 
   local line existing merged new_line
@@ -89,7 +76,7 @@ ensure_modules_in_mkinitcpio() {
     # No MODULES line: create one with the required modules
     merged="$(printf "%s " "${REQUIRED_MODULES[@]}" | sed 's/[[:space:]]\+$//')"
     echo "MODULES=(${merged})" >>"$MKINITCONF"
-    echo "Added new MODULES line: MODULES=(${merged})"
+    info "Added new MODULES line: MODULES=(${merged})"
   else
     existing="$(parse_modules_from_line "$line")"
     merged="$(dedupe_and_merge_modules "$existing")"
@@ -109,14 +96,14 @@ ensure_modules_in_mkinitcpio() {
       }
     ' "$MKINITCONF" >"${MKINITCONF}.tmp"
 
-    # mv "${MKINITCONF}.tmp" "$MKINITCONF"
-    echo "Updated MODULES line to: $new_line"
+    mv "${MKINITCONF}.tmp" "$MKINITCONF"
+    info "Updated MODULES line to: $new_line"
   fi
 }
 
 maybe_add_kms_hook() {
   # Insert 'kms' into HOOKS if not present, placing it after 'modconf' if possible
-  echo "Checking for kms hook in HOOKS…"
+  info "Checking for kms hook in HOOKS…"
   if ! awk '/^[[:space:]]*#/ {next} /^[[:space:]]*HOOKS[[:space:]]*=/{print;exit}' "$MKINITCONF" | grep -qw "kms"; then
     backup_file "$MKINITCONF"
     awk '
@@ -149,14 +136,14 @@ maybe_add_kms_hook() {
       { print }
     ' "$MKINITCONF" >"${MKINITCONF}.tmp"
     mv "${MKINITCONF}.tmp" "$MKINITCONF"
-    echo "Added 'kms' to HOOKS."
+    info "Added 'kms' to HOOKS."
   else
-    echo "'kms' hook already present."
+    info "'kms' hook already present."
   fi
 }
 
 ensure_modprobe_modeset() {
-  echo "Ensuring DRM KMS (modeset=1) via $MODPROBE_NVIDIA_CONF…"
+  info "Ensuring DRM KMS (modeset=1) via $MODPROBE_NVIDIA_CONF…"
   mkdir -p "$(dirname "$MODPROBE_NVIDIA_CONF")"
   if [[ -f "$MODPROBE_NVIDIA_CONF" ]]; then
     if grep -q '^options[[:space:]]\+nvidia_drm' "$MODPROBE_NVIDIA_CONF"; then
@@ -168,27 +155,27 @@ ensure_modprobe_modeset() {
   else
     echo "options nvidia_drm modeset=1" >"$MODPROBE_NVIDIA_CONF"
   fi
-  echo "Set: options nvidia_drm modeset=1"
+  info "Set: options nvidia_drm modeset=1"
 }
 
 rebuild_initramfs() {
-  echo "Rebuilding initramfs (mkinitcpio -P)…"
+  info "Rebuilding initramfs (mkinitcpio -P)…"
   mkinitcpio -P
-  echo "Initramfs rebuilt."
+  info "Initramfs rebuilt."
 }
 
 main() {
   require_root
 
   if ! command -v lspci >/dev/null 2>&1; then
-    echo "Installing pciutils to detect GPU…"
+    info "Installing pciutils to detect GPU…"
     pacman -Sy --needed --noconfirm pciutils
   fi
 
   if have_nvidia_gpu; then
-    echo "NVIDIA GPU detected."
+    info "NVIDIA GPU detected."
   else
-    echo "Warning: No NVIDIA GPU detected by lspci. Continuing anyway…" >&2
+    info "Warning: No NVIDIA GPU detected by lspci. Continuing anyway…" >&2
   fi
 
   ensure_modules_in_mkinitcpio
@@ -205,10 +192,6 @@ All done!
 • Ensured HOOKS includes: kms
 • Enabled DRM KMS: options nvidia_drm modeset=1
 • Rebuilt initramfs: mkinitcpio -P
-
-Note:
-- For Wayland and smooth handoff, many setups also add the kernel parameter: nvidia-drm.modeset=1
-  Configure that in your bootloader if needed (e.g., GRUB_CMDLINE_LINUX_DEFAULT).
 EOF
 }
 

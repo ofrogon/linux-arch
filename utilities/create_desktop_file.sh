@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Source utility functions
+source ./utils.sh
+
 set -euo pipefail
 
 # --- helpers ---
@@ -33,18 +37,16 @@ slugify() {
   echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//'
 }
 
-have() { command -v "$1" >/dev/null 2>&1; }
-
 detect_browser() {
   # Prefer Chromium-based for --app=
   local c
   for c in chromium chromium-browser google-chrome-stable google-chrome chrome brave-browser brave microsoft-edge-stable microsoft-edge edge vivaldi; do
-    if have "$c"; then
+    if have_cmd "$c"; then
       echo "$c"
       return 0
     fi
   done
-  if have firefox; then
+  if have_cmd firefox; then
     echo "firefox"
     return 0
   fi
@@ -59,9 +61,9 @@ download_icon() {
   local src="$1" dst="$2"
   # Accept URL or local file path
   if [[ "$src" =~ ^https?:// ]]; then
-    if have curl; then
+    if have_cmd curl; then
       curl -fL "$src" -o "$dst"
-    elif have wget; then
+    elif have_cmd wget; then
       wget -O "$dst" "$src"
     else
       die "Neither curl nor wget found to download icon."
@@ -89,7 +91,7 @@ build_exec() {
 }
 
 update_desktop_db_if_possible() {
-  if have update-desktop-database; then
+  if have_cmd update-desktop-database; then
     update-desktop-database "$HOME/.local/share/applications" >/dev/null 2>&1 || true
   fi
 }
@@ -230,6 +232,6 @@ EOF
 chmod +x "$DESKTOP_PATH"
 update_desktop_db_if_possible
 
-echo "Created: $DESKTOP_PATH"
-echo "Icon:    $ICON_PATH"
-echo "If it doesn't appear in your launcher immediately, log out/in or run: update-desktop-database ~/.local/share/applications"
+ok "Created: $DESKTOP_PATH"
+info "Icon:    $ICON_PATH"
+info "If it doesn't appear in your launcher immediately, log out/in or run: update-desktop-database ~/.local/share/applications"

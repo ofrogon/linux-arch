@@ -13,7 +13,7 @@ is_group_installed() {
 # Function to install a single package if not already installed
 install_package() {
   if ! is_installed "$1" && ! is_group_installed "$1"; then
-    to_install+=("$1")
+    yay -S --noconfirm $1
   fi
 }
 
@@ -29,7 +29,59 @@ install_packages() {
   done
 
   if [ ${#to_install[@]} -ne 0 ]; then
-    echo "Installing: ${to_install[*]}"
+    info "Installing: ${to_install[*]}"
     yay -S --noconfirm "${to_install[@]}"
   fi
+}
+
+# Require the user to be root
+require_root() {
+  if [[ $EUID -ne 0 ]]; then
+    echo "Please run as root (sudo)." >&2
+    exit 1
+  fi
+}
+
+have_cmd() {
+  command -v "$1" &>/dev/null
+}
+
+# Create a backup copy of a file
+backup_file() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    local ts
+    ts="$(date +%Y%m%d-%H%M%S)"
+    cp -a "$file" "$file.bak-${ts}"
+    echo "Backed up $file to $file.bak-${ts}"
+  fi
+}
+
+# Restore the backup version of a file
+# TODO Work on this and complete the
+restore_backup_file() {
+  local file="$1"
+  if [[ -f "$file" ]]; then
+    # Test if a backup file exist and take the latest
+    # rm "$file"
+    # mv "$old_file" "$file"
+    echo "Restored up ${file} from ${old_file}"
+  fi
+}
+
+# ---------- Console log helpers ----------
+err() {
+  printf "\e[31m[error]\e[0m %s\n" "$*" >&2
+}
+
+warn() {
+  printf "\e[33m[warning]\e[0m %s\n" "$*" >&2
+}
+
+ok() {
+  printf "\e[32m[ok]\e[0m %s\n" "$*"
+}
+
+info() {
+  printf "\e[34m[info]\e[0m %s\n" "$*"
 }

@@ -2,28 +2,12 @@
 # Configure autologin on TTY1 and auto-start Hyprland via UWSM for a given user.
 # Usage: sudo bash setup-autologin-hyprland-uwsm.sh <username>
 
+# Source utility functions
+source ../utilities/utils.sh
+
 set -euo pipefail
 
-# ---------- helpers ----------
-err() { printf "\e[31m[error]\e[0m %s\n" "$*" >&2; }
-ok() { printf "\e[32m[ok]\e[0m %s\n" "$*"; }
-info() { printf "\e[34m[info]\e[0m %s\n" "$*"; }
-
-require_root() {
-  if [[ ${EUID:-$(id -u)} -ne 0 ]]; then
-    err "This script need to be run as root (sudo)."
-    exit 1
-  fi
-}
-
-check_bin() {
-  if ! command -v "$1" >/dev/null 2>&1; then
-    err "Can't find binary: $1. Install it and re-run this script."
-    exit 1
-  fi
-}
-
-# ---------- inputs ----------
+# Ensure root
 require_root
 
 if [[ $# -lt 1 ]]; then
@@ -44,9 +28,9 @@ if [[ -z "$USER_HOME" || ! -d "$USER_HOME" ]]; then
 fi
 
 # ---------- sanity checks ----------
-check_bin agetty
-check_bin uwsm
-check_bin Hyprland
+is_installed agetty
+is_installed uwsm
+is_installed Hyprland
 
 # ---------- 1) systemd agetty autologin ----------
 info "Configuring auto-login on TTY1 for user $TARGET_USER …"
@@ -64,24 +48,22 @@ ExecStart=-/sbin/agetty --autologin ${TARGET_USER} --noclear %I \$TERM
 Type=simple
 EOF
 
-ok "Drop-in écrit: $DROPIN_FILE"
+ok "Drop-in writen: $DROPIN_FILE"
 
-# Activer et recharger systemd
+# Activate and reload the system
 systemctl daemon-reload
 systemctl enable getty@tty1.service >/dev/null
 systemctl restart getty@tty1.service || true
 ok "getty@tty1 (auto-login) activé."
 
-# ---------- 2) profil de session: démarrer UWSM -> Hyprland ----------
-info "Ajout du démarrage automatique UWSM/Hyprland dans le profil de session …"
-
+# ---------- 2) Session profil: starting UWSM -> Hyprland ----------
 BLOCK_START="# >>> UWSM/Hyprland autostart (tty1) >>>"
 BLOCK_END="# <<< UWSM/Hyprland autostart (tty1) <<<"
 BLOCK_CONTENT=$(
   cat <<'EOS'
 # >>> UWSM/Hyprland autostart (tty1) >>>
-# Démarre la session UWSM/Hyprland quand on se logue sur TTY1,
-# et uniquement si aucune session graphique n'est déjà active.
+# Starting the UWSM/Hyprland session on TTY1 start,
+# and only if no other graphical session are started
 if uwsm check may-start; then
     exec uwsm start hyprland-uwsm.desktop
 fi
@@ -91,11 +73,10 @@ EOS
 
 add_block_idempotent() {
   local file="$1"
-  # Crée le fichier s'il n'existe pas
+  # Create the file if it doesn't already exist
   [[ -f "$file" ]] || touch "$file"
-  # Retire un ancien bloc si présent, puis ajoute le nouveau
+  # Remove the old block if it exist, then add the new one
   if grep -qF "$BLOCK_START" "$file"; then
-    # supprimer bloc existant
     awk -v start="$BLOCK_START" -v end="$BLOCK_END" '
       BEGIN{skip=0}
       index($0,start){skip=1; next}
@@ -117,23 +98,3 @@ add_block_idempotent "$ZSH_PROFILE"
 chown "$TARGET_USER":"$TARGET_USER" "$BASH_PROFILE" "$ZSH_PROFILE"
 
 ok "Blocs added to: $BASH_PROFILE and $ZSH_PROFILE"
-
-# ---------- 3) conseils ----------
-cat <<TIP
-
-${OK:-}
-Hint:
-- Au prochain boot (ou déconnexion/reconnexion), $TARGET_USER sera auto-loggé sur TTY1
-  et la session se lancera via: 'uwsm start hyprland-uwsm.desktop'.
-- Pour tester sans rebooter: change vers TTY1 (Ctrl+Alt+F1), déconnecte-toi, puis reconnecte-toi.
-
-Désactivation / rollback:
-- Supprime le drop-in et relance systemd:
-    sudo rm -f "$DROPIN_FILE"
-    sudo systemctl daemon-reload
-    sudo systemctl restart getty@tty1.service
-- Édite '$BASH_PROFILE' et '$ZSH_PROFILE' pour retirer le bloc entre:
-    $BLOCK_START
-    $BLOCK_END
-
-TIP

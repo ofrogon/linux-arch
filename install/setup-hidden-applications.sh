@@ -1,15 +1,24 @@
 #!/bin/bash
 
+source ../utilities/utils.sh
+
+set -euo pipefail
+
+require_root
+
 # Applications to hide
 APPLICATIONS_TO_HIDE=(
   "assistant" # QT Assistant
   "avahi-discover"
-  "bssh"     # Avahi SSH Server Browser
-  "bvnc"     # Avahi VNC Server Browser
+  "bssh" # Avahi SSH Server Browser
+  "bvnc" # Avahi VNC Server Browser
+  "btop"
+  "cmake-gui"
   "designer" # QT Widget Designer
   "electron37"
-  "btop"
   "htop"
+  "jconsole-java-openjdk"
+  "jshell-java-openjdk"
   "kvantummanager"
   "linguist" # QT Linguist
   "lstopo"
@@ -20,9 +29,12 @@ APPLICATIONS_TO_HIDE=(
   "qvidcap"     # Qt V4L2 video capture utility
   "vim"
   "nvim"
+  "uxterm"
   "uuctl"
   "xgps"
   "xgpsspeed"
+  "xterm"
+  "yazi"
 )
 
 # Standard folders where can be found the .desktop
@@ -39,14 +51,14 @@ for app in "${APPLICATIONS_TO_HIDE[@]}"; do
       found=true
       # Validate if NoDisplay already exist
       if grep -q "^NoDisplay=" "$file"; then
-        echo "[INFO] $app.desktop already contains NoDisplay (file not modified)"
+        info "$app.desktop already contains NoDisplay (file not modified)"
       else
-        echo "[ACTION] Adding NoDisplay=true à $file"
+        ok "Adding NoDisplay=true à $file"
         echo "NoDisplay=true" | sudo tee -a "$file" >/dev/null
       fi
     fi
   done
   if [[ "$found" = false ]]; then
-    echo "[WARN] File .desktop can't be found for $app"
+    warn "File .desktop can't be found for $app"
   fi
 done

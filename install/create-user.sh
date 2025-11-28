@@ -11,5 +11,6 @@ fi
 # Install sudo
 install_package sudo
 
-useradd --create-home USER_NAME
+# Add the user and set it as sudoer
+useradd --create-home ${USER_NAME}
 echo "${USER_NAME} ALL=(ALL) ALL" >>"/etc/sudoers.d/90-${USER_NAME}"
