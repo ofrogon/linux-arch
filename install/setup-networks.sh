@@ -1,5 +1,7 @@
+#!/bin/bash
+
 # Source utility functions
-source ../utilities/utils.sh
+source "$(dirname "$0")/../utilities/utils.sh"
 
 set -euo pipefail
 

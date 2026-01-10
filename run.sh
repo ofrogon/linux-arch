@@ -29,20 +29,20 @@ source utilities/utils.sh
 
 # TODO Add a step to ask for username, email and git name
 echo "What is your username (format: john)"
-read USERNAME
+read -r USERNAME
 
 echo "What is your Git email address (format: john.doe@email.com)?"
-read GIT_EMAIL
+read -r GIT_EMAIL
 
 echo "What is your Git name (format: John Doe)?"
-read GIT_USERNAME
+read -r GIT_USERNAME
 
-echo "Do you have en Nvidia system? (y/N)"
-read SET_NVIDIA
+echo "Do you have an Nvidia system? (y/N)"
+read -r SET_NVIDIA
 SET_NVIDIA=${SET_NVIDIA:-N}
 
 echo "Do you want to configure Steam (NVidia only for now)? (y/N)"
-read SET_STEAM
+read -r SET_STEAM
 SET_STEAM=${SET_STEAM:-N}
 
 # Source the package lists
@@ -59,7 +59,7 @@ PACKAGES_LIST=(
   TERMINAL_TOOLS
 )
 
-for package in ${PACKAGES_LIST[@]}; do
+for package in "${PACKAGES_LIST[@]}"; do
   if [ ! -f "packages/${package}.conf" ]; then
     echo "Error: ${package}.conf not found!"
     exit 1
@@ -126,8 +126,8 @@ else
   echo "Configuring Locales..."
   . install/locales.sh
 
-  # Some magic to do with RUST
-  if ! have_cmd rustup; then
+  # Configure Rust default toolchain if rustup is available
+  if have_cmd rustup; then
     rustup default stable
   fi
 
@@ -161,7 +161,7 @@ else
     install_packages "${STEAM[@]}"
   fi
 
-  # Set this a an option
+  # TODO: Make this configurable as an option
   install_packages "${RAZER_BLADE[@]}"
 
   echo "Installing system utilities..."

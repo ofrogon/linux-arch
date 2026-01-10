@@ -11,7 +11,7 @@ set -euo pipefail
 require_root
 
 if [[ $# -lt 1 ]]; then
-  err "User: $0 <username>"
+  err "Usage: $0 <username>"
   exit 1
 fi
 

@@ -53,7 +53,7 @@ for app in "${APPLICATIONS_TO_HIDE[@]}"; do
       if grep -q "^NoDisplay=" "$file"; then
         info "$app.desktop already contains NoDisplay (file not modified)"
       else
-        ok "Adding NoDisplay=true à $file"
+        ok "Adding NoDisplay=true to $file"
         echo "NoDisplay=true" | sudo tee -a "$file" >/dev/null
       fi
     fi

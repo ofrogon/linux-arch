@@ -24,7 +24,7 @@ git clone "https://github.com/${OFROGON_REPO}.git" ~/.local/share/ofrogon >/dev/
 # Use custom branch if instructed, otherwise default to main
 OFROGON_REF="${OFROGON_REF:-main}"
 if [[ $OFROGON_REF != "master" ]]; then
-  echo -e "\eUsing branch: $OFROGON_REF"
+  echo -e "\nUsing branch: $OFROGON_REF"
   cd ~/.local/share/ofrogon
   git fetch origin "${OFROGON_REF}" && git checkout "${OFROGON_REF}"
   cd -

@@ -57,15 +57,19 @@ backup_file() {
   fi
 }
 
-# Restore the backup version of a file
-# TODO Work on this and complete the
+# Restore the latest backup version of a file
 restore_backup_file() {
   local file="$1"
-  if [[ -f "$file" ]]; then
-    # Test if a backup file exist and take the latest
-    # rm "$file"
-    # mv "$old_file" "$file"
-    echo "Restored up ${file} from ${old_file}"
+  # Find the latest backup file (sorted by timestamp in filename)
+  local latest_backup
+  latest_backup=$(ls -1 "${file}.bak-"* 2>/dev/null | sort -r | head -n1)
+
+  if [[ -n "$latest_backup" && -f "$latest_backup" ]]; then
+    cp -a "$latest_backup" "$file"
+    echo "Restored $file from $latest_backup"
+  else
+    echo "No backup found for $file" >&2
+    return 1
   fi
 }
 
