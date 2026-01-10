@@ -79,10 +79,10 @@ echo "Updating system..."
 sudo pacman -Syu --noconfirm
 
 # Install yay AUR helper if not present
-if ! command -v yay &>/dev/null; then
+if ! have_cmd yay; then
   ./install/install-yay.sh
 else
-  echo "yay is already installed"
+  info "yay is already installed"
 fi
 
 # Install packages by category
@@ -127,7 +127,7 @@ else
   . install/locales.sh
 
   # Some magic to do with RUST
-  if ! command -v rustup &>/dev/null; then
+  if ! have_cmd rustup; then
     rustup default stable
   fi
 

@@ -85,3 +85,38 @@ ok() {
 info() {
   printf "\e[34m[info]\e[0m %s\n" "$*"
 }
+
+# Exit with error message
+die() {
+  err "$*"
+  exit 1
+}
+
+# Ensure directory exists
+ensure_dir() {
+  mkdir -p "$@"
+}
+
+# Add or update a marked block in a file
+# Usage: add_or_update_block <file> <block_start> <block_end> <content>
+add_or_update_block() {
+  local file="$1" block_start="$2" block_end="$3" content="$4"
+  [[ -f "$file" ]] || touch "$file"
+  if grep -qF "$block_start" "$file"; then
+    awk -v start="$block_start" -v end="$block_end" '
+      BEGIN{skip=0}
+      index($0,start){skip=1; next}
+      index($0,end){skip=0; next}
+      skip==0{print}
+    ' "$file" >"$file.tmp"
+    mv "$file.tmp" "$file"
+  fi
+  printf "\n%s\n" "$content" >>"$file"
+}
+
+# Prompt user for input
+# Usage: prompt_var <variable_name> <prompt_message>
+prompt_var() {
+  local var_name="$1" prompt="$2"
+  read -rp "$prompt" "$var_name"
+}

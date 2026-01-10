@@ -167,7 +167,7 @@ rebuild_initramfs() {
 main() {
   require_root
 
-  if ! command -v lspci >/dev/null 2>&1; then
+  if ! have_cmd lspci; then
     info "Installing pciutils to detect GPU…"
     pacman -Sy --needed --noconfirm pciutils
   fi

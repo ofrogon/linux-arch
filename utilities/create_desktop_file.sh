@@ -6,11 +6,6 @@ source ./utils.sh
 set -euo pipefail
 
 # --- helpers ---
-die() {
-  echo "Error: $*" >&2
-  exit 1
-}
-
 usage() {
   cat >&2 <<'USAGE'
 Create a PWA .desktop launcher (CLI or interactive).

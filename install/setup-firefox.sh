@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Source utility functions
+source "$(dirname "$0")/../utilities/utils.sh"
+
 set -euo pipefail
 
 # Hides the buttons (close, minimize, maximize) in Firefox via userChrome.css.
@@ -12,11 +15,6 @@ PROFILES_INI="${MOZ_DIR}/profiles.ini"
 TAG_START="/* >>> hide-window-buttons START <<< */"
 TAG_END="/* >>> hide-window-buttons END <<< */"
 BACKUP_SUFFIX=".pre-hide-window-buttons.bak"
-
-die() {
-  echo "Error: $*" >&2
-  exit 1
-}
 
 ensure_profiles_ini() {
   [[ -f "$PROFILES_INI" ]] || die "profiles.ini not found in ${MOZ_DIR}. Run Firefox once to create a profile."
