@@ -27,7 +27,7 @@ set -e
 # Source utility functions
 source utilities/utils.sh
 
-# TODO Ajouter un étape pour demander le nom d'utilisateur, email et nom git
+# TODO Add a step to ask for username, email and git name
 echo "What is your username (format: john)"
 read USERNAME
 

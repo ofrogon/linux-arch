@@ -88,7 +88,7 @@ add_block_idempotent() {
   printf "\n%s\n" "$BLOCK_CONTENT" >>"$file"
 }
 
-# Gérer bash et zsh (on les alimente tous les deux, c’est sans risque)
+# Handle bash and zsh (we feed them both, it's safe)
 BASH_PROFILE="$USER_HOME/.bash_profile"
 ZSH_PROFILE="$USER_HOME/.zprofile"
 

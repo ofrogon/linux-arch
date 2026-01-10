@@ -2,10 +2,10 @@
 
 set -euo pipefail
 
-# Masque les boutons (fermer, réduire, maximiser) dans Firefox via userChrome.css.
-# Fonctionne pour les profils du dossier ~/.mozilla/firefox.
-# Options :
-#   --undo : restaure le userChrome.css précédent si un backup a été créé par ce script.
+# Hides the buttons (close, minimize, maximize) in Firefox via userChrome.css.
+# Works for profiles in the ~/.mozilla/firefox folder.
+# Options:
+#   --undo: restores the previous userChrome.css if a backup was created by this script.
 
 MOZ_DIR="${HOME}/.mozilla/firefox"
 PROFILES_INI="${MOZ_DIR}/profiles.ini"
@@ -14,16 +14,16 @@ TAG_END="/* >>> hide-window-buttons END <<< */"
 BACKUP_SUFFIX=".pre-hide-window-buttons.bak"
 
 die() {
-  echo "Erreur: $*" >&2
+  echo "Error: $*" >&2
   exit 1
 }
 
 ensure_profiles_ini() {
-  [[ -f "$PROFILES_INI" ]] || die "profiles.ini introuvable dans ${MOZ_DIR}. Lancez Firefox une fois pour créer un profil."
+  [[ -f "$PROFILES_INI" ]] || die "profiles.ini not found in ${MOZ_DIR}. Run Firefox once to create a profile."
 }
 
 list_profiles_paths() {
-  # Retourne les chemins de profils (relatifs à ~/.mozilla/firefox/ si IsRelative=1)
+  # Returns profile paths (relative to ~/.mozilla/firefox/ if IsRelative=1)
   awk -v moz="$MOZ_DIR" '
     BEGIN{RS=""; FS="\n"}
     /(\[Profile[0-9]+\]|\[Install[^\]]+\])/ {
@@ -44,7 +44,7 @@ enable_userchrome_pref() {
   mkdir -p "$prof_dir"
   local user_js="${prof_dir}/user.js"
   if [[ -f "$user_js" && ! -w "$user_js" ]]; then
-    echo "WARN: ${user_js} non modifiable, saute." >&2
+    echo "WARN: ${user_js} not writable, skipping." >&2
     return
   fi
   if [[ ! -f "$user_js" ]] || ! grep -q 'toolkit\.legacyUserProfileCustomizations\.stylesheets' "$user_js"; then
@@ -58,12 +58,12 @@ inject_css() {
   local ucss="${chrome_dir}/userChrome.css"
   mkdir -p "$chrome_dir"
 
-  # CSS à injecter pour masquer les boutons Firefox (CSD)
-  # Couvre plusieurs sélecteurs selon versions (Proton/GTK/Wayland).
+  # CSS to inject to hide Firefox buttons (CSD)
+  # Covers multiple selectors depending on versions (Proton/GTK/Wayland).
   local css_content
   read -r -d '' css_content <<'CSS'
 /* >>> hide-window-buttons START <<< */
-/* Masque les boutons de fenêtre dans l'UI de Firefox (CSD / Title Bar désactivée). */
+/* Hides window buttons in Firefox UI (CSD / Title Bar disabled). */
 :root:not([lwtheme-image]) .titlebar-buttonbox-container,
 #titlebar .titlebar-buttonbox-container,
 #TabsToolbar .titlebar-buttonbox-container,
@@ -75,7 +75,7 @@ inject_css() {
   display: none !important;
 }
 
-/* Certaines variantes d'en-tête (Wayland/GTK headerbar) */
+/* Some header variants (Wayland/GTK headerbar) */
 #nav-bar .titlebar-buttonbox-container,
 #navigator-toolbox .titlebar-buttonbox-container {
   display: none !important;
@@ -112,9 +112,9 @@ undo_changes() {
 
   if [[ -f "$bak" ]]; then
     cp -a "$bak" "$ucss"
-    echo "Restauré: $ucss depuis $bak"
+    echo "Restored: $ucss from $bak"
   elif [[ -f "$ucss" ]]; then
-    # Sinon, retire seulement le bloc injecté
+    # Otherwise, only remove the injected block
     awk -v start="$TAG_START" -v end="$TAG_END" '
       BEGIN{skip=0}
       {
@@ -123,9 +123,9 @@ undo_changes() {
         if(!skip) print
       }
     ' "$ucss" >"${ucss}.tmp" && mv "${ucss}.tmp" "$ucss"
-    echo "Bloc CSS retiré de: $ucss"
+    echo "CSS block removed from: $ucss"
   else
-    echo "Rien à annuler pour le profil: $prof_dir"
+    echo "Nothing to undo for profile: $prof_dir"
   fi
 }
 
@@ -141,25 +141,25 @@ main() {
   ensure_profiles_ini
   mapfile -t profiles < <(list_profiles_paths)
 
-  [[ ${#profiles[@]} -gt 0 ]] || die "Aucun profil trouvé. Vérifiez ${PROFILES_INI}."
+  [[ ${#profiles[@]} -gt 0 ]] || die "No profile found. Check ${PROFILES_INI}."
 
   for p in "${profiles[@]}"; do
-    # Ne viser que les dossiers de profil (ex: *.default-release)
+    # Only target profile folders (e.g., *.default-release)
     if [[ -d "$p" && -f "$p/prefs.js" ]]; then
-      echo "Profil: $p"
+      echo "Profile: $p"
       if ((do_undo)); then
         undo_changes "$p"
       else
         enable_userchrome_pref "$p"
         inject_css "$p"
-        echo "→ CSS appliqué. Redémarrez Firefox pour voir l'effet."
+        echo "→ CSS applied. Restart Firefox to see the effect."
       fi
     fi
   done
   if ((do_undo)); then
-    echo "Terminé (undo)."
+    echo "Done (undo)."
   else
-    echo "Terminé."
+    echo "Done."
   fi
 }
 

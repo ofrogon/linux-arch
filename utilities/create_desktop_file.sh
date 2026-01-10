@@ -16,16 +16,16 @@ usage() {
 Create a PWA .desktop launcher (CLI or interactive).
 
 Options:
-  -n, --name NAME            Nom de l'application (ex: "Notion")
-  -u, --url URL              URL à lancer (doit commencer par http:// ou https://)
-  -i, --icon PATH_OR_URL     Icône (fichier local ou URL)
-  -b, --browser CMD          Binaire du navigateur (ex: google-chrome, brave, firefox)
-      --wmclass WMCLASS      Valeur StartupWMClass (sinon générée depuis le nom)
-      --categories CATS      Catégories .desktop (ex: "Internet;Productivity;")
-      --no-prompt            Ne pose aucune question (échoue si requis manquant)
-  -h, --help                 Afficher cette aide
+  -n, --name NAME            Application name (e.g., "Notion")
+  -u, --url URL              URL to launch (must start with http:// or https://)
+  -i, --icon PATH_OR_URL     Icon (local file or URL)
+  -b, --browser CMD          Browser binary (e.g., google-chrome, brave, firefox)
+      --wmclass WMCLASS      StartupWMClass value (otherwise generated from the name)
+      --categories CATS      .desktop categories (e.g., "Internet;Productivity;")
+      --no-prompt            Don't ask any questions (fails if required missing)
+  -h, --help                 Display this help
 
-Exemples:
+Examples:
   pwa-desktop.sh -n "Notion" -u https://www.notion.so/ -i ~/pics/notion.png
   pwa-desktop.sh --name Slack --url https://app.slack.com --icon https://.../slack.png --browser brave
 
@@ -80,7 +80,7 @@ build_exec() {
   local browser="$1" url="$2" wmclass="$3"
   case "$browser" in
   *firefox*)
-    # Firefox n'a pas --app ; --kiosk est l'approche la plus proche.
+    # Firefox doesn't have --app; --kiosk is the closest approach.
     printf '%s --kiosk "%s"' "$browser" "$url"
     ;;
   *)
