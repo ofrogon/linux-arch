@@ -74,7 +74,7 @@ OFROGON_REPO="youruser/your-fork" OFROGON_REF="dev-branch" \
 | **Desktop** | Hyprland, Waybar, Hyprlock, Hyprpaper, Hypridle, Walker, Plymouth |
 | **Apps** | Ghostty, Nautilus, Firefox, Chromium, Discord, Signal, Obsidian, LibreOffice, GIMP, mpv |
 | **Audio** | PipeWire (with ALSA, JACK, PulseAudio compat), WirePlumber, SwayOSD |
-| **Dev tools** | Neovim, Git, Lazygit, Clang, GCC, Cargo/Rust, .NET SDK 8.0, mise |
+| **Dev tools** | Neovim, Git, Lazygit, Clang, GCC, Cargo/Rust, .NET SDK 10.0, mise |
 | **Terminal** | ZSH, Starship, fzf, ripgrep, bat, eza, fd, zoxide, tmux, stow |
 | **Fonts** | JetBrains Mono Nerd, Font Awesome |
 | **Theme** | Catppuccin Macchiato (cursors, Plymouth boot screen) |
