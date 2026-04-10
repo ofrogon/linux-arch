@@ -2,6 +2,10 @@
 
 Automated post-installation setup for Arch Linux with a Hyprland desktop environment, Catppuccin Macchiato theming, and development tooling. Supports both full desktop installs and WSL environments.
 
+## Motivation
+
+Setting up a new Arch Linux system from scratch involves dozens of manual steps — installing packages, configuring dotfiles, setting up themes, and tweaking system services. XOBRUX exists to collapse that into a single command. The goal is a fully configured Hyprland desktop with Catppuccin theming, development tooling, and sane defaults, reproducible on any fresh Arch install or WSL environment.
+
 ## Quick Start
 
 ### Install from the web (fresh Arch system)
@@ -21,6 +25,12 @@ curl -fsSL https://raw.githubusercontent.com/ofrogon/linux-arch/refs/heads/main/
 ```bash
 ./run.sh
 ```
+
+## Usage
+
+Run `run.sh` directly on an already-cloned repo, or bootstrap remotely with `boot.sh` (see Quick Start). The script will prompt for configuration, then install packages and apply settings automatically. For WSL use, pass `--wsl-only` to skip desktop packages.
+
+See [Options](#options) below for the full list of flags and interactive prompts.
 
 ## Options
 
@@ -99,6 +109,13 @@ A standalone tool to create `.desktop` launchers for web apps:
 ```
 
 Run with `--help` for all options. Supports interactive mode (just run without arguments) or fully non-interactive with `--no-prompt`.
+
+## Contributing
+
+1. Fork the repo and create a branch for your change.
+2. Keep scripts consistent with the existing style: `#!/bin/bash`, `set -euo pipefail`, use the helpers in `utilities/utils.sh` (`install_package`, `info`, `warn`, `err`, etc.) rather than calling `yay`/`pacman` or `echo` directly.
+3. Package lists in `packages/*.conf` should remain alphabetically sorted, one entry per line.
+4. Open a pull request with a clear description of what the change does and why.
 
 ## Project Structure
 
