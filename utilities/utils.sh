@@ -10,10 +10,21 @@ is_group_installed() {
   pacman -Qg "$1" &>/dev/null
 }
 
+# Run yay as the invoking user (makepkg refuses to run as root)
+run_yay() {
+  if [[ $EUID -eq 0 ]]; then
+    local build_user="${SUDO_USER:-}"
+    [[ -z "$build_user" || "$build_user" == "root" ]] && die "Run this script via sudo from a normal user account, e.g.: sudo ./run.sh"
+    sudo -u "$build_user" yay "$@"
+  else
+    yay "$@"
+  fi
+}
+
 # Function to install a single package if not already installed
 install_package() {
   if ! is_installed "$1" && ! is_group_installed "$1"; then
-    yay -S --noconfirm $1
+    run_yay -S --noconfirm "$1"
   fi
 }
 
@@ -30,7 +41,7 @@ install_packages() {
 
   if [ ${#to_install[@]} -ne 0 ]; then
     info "Installing: ${to_install[*]}"
-    yay -S --noconfirm "${to_install[@]}"
+    run_yay -S --noconfirm "${to_install[@]}"
   fi
 }
 
