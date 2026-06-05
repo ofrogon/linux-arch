@@ -160,7 +160,6 @@ main() {
   require_root
   install_package plymouth
   fix_mkinitcpio_hooks
-  set_theme_if_requested
   rebuild_initramfs
   ensure_kernel_arg_splash
 
