@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Source utility functions
-source "$(dirname "$0")/../utilities/utils.sh"
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../utilities/utils.sh"
 
 set -euo pipefail
 

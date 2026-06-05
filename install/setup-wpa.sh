@@ -1,6 +1,6 @@
 #!/bin/bash
 
-UTILITY_SCRIPT_PATH="$(dirname "$0")/../utilities/create_desktop_file.sh"
+UTILITY_SCRIPT_PATH="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../utilities/create_desktop_file.sh"
 
 "$UTILITY_SCRIPT_PATH" --name "Todoist" --url "https://app.todoist.com" --icon "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/todoist.png" --no-prompt
 "$UTILITY_SCRIPT_PATH" --name "Feishin" --url "https://player.xobrux.com" --icon "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/feishin.png" --no-prompt
