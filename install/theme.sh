@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Source utility functions
-source ../utilities/utils.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../utilities/utils.sh"
 
 # Set global theme (GTK)
 info "Setting GTK theme..."

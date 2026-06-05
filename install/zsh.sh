@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Source utility functions
-source ../utilities/utils.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../utilities/utils.sh"
 
 # Install and configure Oh-My-ZSH
 info "Installing Oh-My-ZSH..."

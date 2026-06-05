@@ -3,7 +3,8 @@
 GEN=/etc/locale.gen
 LOCALES=("en_GB.UTF-8 UTF-8  " "en_US.UTF-8 UTF-8  ")
 
-source ../utilities/utils.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$SCRIPT_DIR/../utilities/utils.sh"
 
 require_root
 
