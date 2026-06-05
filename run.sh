@@ -134,6 +134,13 @@ else
   echo "Configure Pacman"
   . install/setup-pacman.sh
 
+  # Install pipewire stack first so jack2 is never pulled as a dependency
+  install_package pipewire
+  install_package pipewire-alsa
+  install_package pipewire-jack
+  install_package pipewire-pulse
+  install_package wireplumber
+
   # Install all packages
   echo "Installing desktop requirements..."
   install_packages "${DESKTOP_REQUIREMENT[@]}"
