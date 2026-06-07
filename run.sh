@@ -27,7 +27,14 @@ set -e
 # Source utility functions
 source utilities/utils.sh
 
-# TODO Add a step to ask for username, email and git name
+run_install() {
+  local script="$1"
+  . "$script" || { err "Script '$script' failed — aborting setup"; exit 1; }
+}
+
+# Redirect stdin to /dev/tty so interactive prompts work when piped from curl
+exec < /dev/tty
+
 echo "What is your username (format: john)"
 read -r USERNAME
 
@@ -88,30 +95,30 @@ fi
 # Install packages by category
 if [[ "$WSL_ONLY" == true ]]; then
   echo "Configuring Locales..."
-  #. install/locales.sh
+  run_install install/locales.sh
 
   echo "Configuring local account"
-  #. install/create-user.sh
+  run_install install/create-user.sh
 
   # Only install packages that can be used in WSL
   echo "Installing development tools..."
-  #install_packages "${DEVELOPMENT[@]}"
-  #install_packages "${DEVELOPMENT_DESKTOP[@]}"
+  install_packages "${DEVELOPMENT[@]}"
+  install_packages "${DEVELOPMENT_DESKTOP[@]}"
 
   echo "Installing dotnet tools..."
-  #install_packages "${DOTNET[@]}"
+  install_packages "${DOTNET[@]}"
 
   echo "Installing system utilities..."
-  #install_packages "${SYSTEM_UTILS[@]}"
+  install_packages "${SYSTEM_UTILS[@]}"
 
   echo "Installing terminal tools..."
-  #install_packages "${TERMINAL_TOOLS[@]}"
+  install_packages "${TERMINAL_TOOLS[@]}"
 
   echo "Configuring dotfiles..."
-  . install/setup-dotfiles.sh
+  run_install install/setup-dotfiles.sh
 
   echo "Configuring ZSH..."
-  #. install/zsh.sh
+  run_install install/zsh.sh
 
   echo "####################################"
   echo "# Now you can configure Windows, do this on a Windows terminal"
@@ -124,7 +131,7 @@ if [[ "$WSL_ONLY" == true ]]; then
 
 else
   echo "Configuring Locales..."
-  . install/locales.sh
+  run_install install/locales.sh
 
   # Configure Rust default toolchain if rustup is available
   if have_cmd rustup; then
@@ -132,7 +139,7 @@ else
   fi
 
   echo "Configure Pacman"
-  . install/setup-pacman.sh
+  run_install install/setup-pacman.sh
 
   # Install pipewire stack first so jack2 is never pulled as a dependency
   install_package pipewire
@@ -159,8 +166,8 @@ else
     install_packages "${NVIDIA[@]}"
 
     echo "Configuring Nvidia..."
-    #. install/nvidia.sh
-    . install/setup-cards-symlink.sh
+    #run_install install/nvidia.sh
+    run_install install/setup-cards-symlink.sh
   fi
 
   if [[ "$SET_STEAM" == "Y" || "$SET_STEAM" == "y" ]]; then
@@ -181,28 +188,28 @@ else
   install_packages "${FONTS[@]}"
 
   echo "Configuring Plymouth..."
-  #. install/plymouth.sh
+  run_install install/plymouth.sh
   echo "Configuring dotfiles..."
-  . install/setup-dotfiles.sh
+  run_install install/setup-dotfiles.sh
   echo "Configuring ZSH..."
-  #. install/zsh.sh
+  run_install install/zsh.sh
   echo "Configure Git"
-  . install/setup-git.sh
+  run_install install/setup-git.sh
   echo "Configure theme"
-  . install/theme.sh
+  run_install install/theme.sh
   echo "Hide some applications"
-  . install/setup-hidden-applications.sh
+  run_install install/setup-hidden-applications.sh
   echo "Create the WPAs"
-  . install/setup-wpa.sh
+  run_install install/setup-wpa.sh
   echo "Setup Network services"
-  . install/setup-networks.sh
+  run_install install/setup-networks.sh
   echo "Setup Plymouth (boot screen theme)"
-  . install/install-plymouth-catppuccin-macchiato.sh
-  . install/setup-plymouth.sh
+  run_install install/install-plymouth-catppuccin-macchiato.sh
+  run_install install/setup-plymouth.sh
   echo "Setup default applications"
-  . install/setup-default-app.sh
+  run_install install/setup-default-app.sh
   echo "Setup Firefox"
-  . install/setup-firefox.sh
+  run_install install/setup-firefox.sh
 fi
 
 echo "Setup complete! You may want to reboot your system."
